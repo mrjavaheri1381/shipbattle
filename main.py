@@ -1,7 +1,5 @@
-import base64
-from multiprocessing.connection import wait
 from socket import socket
-from time import sleep
+from asyncio import sleep
 import uuid
 from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -68,8 +66,6 @@ async def get():
 @app.websocket("/ws/{client_name}")
 async def websocket_endpoint(websocket: WebSocket, client_name: str):
     await websocket.accept()
-    await websocket.send_text('start')
-    # await websocket.send_text('joined')
     player = Player(websocket, client_name)
     if(len(Queue) < 1):
         # host
