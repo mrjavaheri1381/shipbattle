@@ -1,10 +1,9 @@
 from socket import socket
 from asyncio import sleep
-import uuid
 from typing import List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
-
+from models import Player, Game, Ship
 app = FastAPI()
 
 html = """
@@ -45,17 +44,8 @@ html = """
 """
 
 
-class Player():
-    currentRival: WebSocket = None
-
-    def __init__(self, websocket: WebSocket, name):
-        self.webSocket: WebSocket = websocket
-        self.name = name
-        self.id = uuid.uuid4()
-        pass
-
-
 Queue: list[Player] = []
+Games: list[Game] = []
 
 
 @app.get("/")
@@ -66,22 +56,21 @@ async def get():
 @app.websocket("/ws/{client_name}")
 async def websocket_endpoint(websocket: WebSocket, client_name: str):
     await websocket.accept()
+    await websocket.send_text('salam')
     player = Player(websocket, client_name)
     if(len(Queue) < 1):
         # host
         Queue.append(player)
     else:
         # peer
-        player.currentRival = Queue[0].webSocket
-        Queue[0].currentRival = websocket
+        game = Game(player, Queue[0])
         Queue.pop(0)
-
+        print('qqq')
+        game.Start()
+    print(Queue)
     try:
-        x = 0
-        while True:
-            await websocket.send_text("salam")
-            sleep(1)
-
+        while 1:
+            pass
     except WebSocketDisconnect:
         await player.currentRival.send_text(f"{client_name} left")
         socket.close()
